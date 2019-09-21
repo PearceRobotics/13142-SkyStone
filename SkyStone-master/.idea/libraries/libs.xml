@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="libs">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/SkyStone-master/libs/FtcCommon-release-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SkyStone-master/libs/RobotServer-release-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SkyStone-master/libs/Hardware-release-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SkyStone-master/libs/Blocks-release-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SkyStone-master/libs/OnBotJava-release-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SkyStone-master/libs/Inspection-release-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SkyStone-master/libs/Vuforia.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SkyStone-master/libs/RobotCore-release-sources.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
