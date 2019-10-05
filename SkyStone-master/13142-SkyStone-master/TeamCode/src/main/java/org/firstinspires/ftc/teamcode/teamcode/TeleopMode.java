@@ -14,15 +14,17 @@ public class TeleopMode extends LinearOpMode
     //Declare motors and servos
     private DcMotor motorLeft;
     private DcMotor motorRight;
-    private DcMotor intakeLeft;
-    private DcMotor intakeRight;
+    private DcMotor fourBar;
     private Servo leftServo;
     private Servo rightServo;
+    private Servo intakeLeft;
+    private Servo intakeRight;
 
     //Variables
     static final double maxPosition = 0.0;
     static final double minPosition = 1.0;
-    double intakespeed = 0.75;
+    static final double lifterUp = 0.0;
+    static final double lifterDown = 1.0;
 
 
     @Override
@@ -31,53 +33,68 @@ public class TeleopMode extends LinearOpMode
         Context myApp = hardwareMap.appContext;
         motorLeft = hardwareMap.dcMotor.get("motorLeft");
         motorRight = hardwareMap.dcMotor.get("motorRight");
-        intakeLeft = hardwareMap.dcMotor.get("intakeLeft");
-        intakeRight = hardwareMap.dcMotor.get("intakeRight");
+        fourBar = hardwareMap.dcMotor.get("lifter");
+        intakeLeft = hardwareMap.get(Servo.class, "intakeLeft");
+        intakeRight = hardwareMap.get(Servo.class, "intakeRight");
         leftServo = hardwareMap.get(Servo.class, "leftServo");
         rightServo = hardwareMap.get(Servo.class, "rightServo");
 
         motorLeft.setDirection(DcMotor.Direction.REVERSE);
-        intakeLeft.setDirection(DcMotor.Direction.REVERSE);
-
+        intakeLeft.setDirection(Servo.Direction.REVERSE);
 
         waitForStart();
 
         while(opModeIsActive())
         {
+            //tank drive
             motorLeft.setPower(-gamepad1.left_stick_y);
             motorRight.setPower(-gamepad1.right_stick_y);
 
+            //platform moving servos up
             if(gamepad1.left_bumper)
             {
-                rightServo.setPosition(maxPosition);
-                leftServo.setPosition(maxPosition);
-
+                platformMoverPosition(maxPosition);
             }
+            //platform moving servos down
             else if(gamepad1.right_bumper)
             {
-                rightServo.setPosition(minPosition);
-                leftServo.setPosition(minPosition);
+                platformMoverPosition(minPosition);
             }
 
+            //Moves intake up
             if(gamepad2.y)
             {
-                intakeOutake(intakespeed);
+                intakeMechanism(lifterUp);
             }
+            //Moves intake down
             if(gamepad2.a)
             {
-                intakeOutake(-intakespeed);
+                intakeMechanism(lifterDown);
             }
-            else
+            //raises and lowers four bar linkage
+            if(gamepad2.left_trigger> .01)
             {
-                intakeOutake(0);
+                raiseFourBar(-gamepad2.left_trigger);
+            }
+            if(gamepad2.right_trigger> 0.1) {
+                raiseFourBar(gamepad2.right_trigger);
             }
 
         }
     }
-    public void intakeOutake(double power)
+    public void platformMoverPosition(double position)
     {
-        intakeLeft.setPower(power);
-        intakeRight.setPower(power);
+        leftServo.setPosition(position);
+        rightServo.setPosition(position);
+    }
+    public void intakeMechanism(double position)
+    {
+        intakeLeft.setPosition(position);
+        intakeRight.setPosition(position);
+    }
+    public void raiseFourBar(double intakeSpeed)
+    {
+        fourBar.setPower(intakeSpeed);
     }
 
 }
