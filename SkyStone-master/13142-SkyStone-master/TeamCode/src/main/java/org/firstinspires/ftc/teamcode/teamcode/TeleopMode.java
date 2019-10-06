@@ -79,6 +79,10 @@ public class TeleopMode extends LinearOpMode
             if(gamepad2.right_trigger> 0.1) {
                 raiseFourBar(gamepad2.right_trigger);
             }
+            else
+            {
+                fourBar.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            }
 
         }
     }
