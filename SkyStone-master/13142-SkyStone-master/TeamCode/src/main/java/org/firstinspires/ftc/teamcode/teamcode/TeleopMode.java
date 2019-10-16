@@ -21,15 +21,13 @@ public class TeleopMode extends LinearOpMode
     private Servo intakeLeft;
     private Servo intakeRight;
 
+
     //Variables
     static final double maxPosition = 0.0;
     static final double minPosition = 1.0;
     static final double IntakeUp = 0.0;
     static final double IntakeDown = 1.0;
-    static final int PositionA = 0;
-    static final int PositionB = 100;
-    static final int PositionC = 200;
-    static final int PositionD = 300;
+    static final double armSpeed = 1;
     static boolean positionA;
     static boolean positionB;
     static boolean positionC;
@@ -53,15 +51,18 @@ public class TeleopMode extends LinearOpMode
         fourBar2.setDirection(DcMotor.Direction.REVERSE);
         intakeLeft.setDirection(Servo.Direction.REVERSE);
 
+        fourBar.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fourBar2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         positionA = true;
         positionB = false;
         positionC = false;
         positionD = false;
 
-        //fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-       // fourBar2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-       // fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-      //  fourBar2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fourBar2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        ////1120 ticks per rotation
 
         waitForStart();
 
@@ -93,46 +94,27 @@ public class TeleopMode extends LinearOpMode
                 intakeMechanism(IntakeDown);
             }
 
-           /* if(gamepad2.a)
+            if(gamepad2.a)
             {
-                positionA();
+                moveArm(-fourBar.getCurrentPosition() -5, armSpeed);
             }
             if(gamepad2.b)
             {
-                positionB();
+                moveArm(25, armSpeed);
             }
             if(gamepad2.x)
             {
-                positionC();
+                moveArm(50, armSpeed);
             }
             if(gamepad2.y)
             {
-                positionD();
-            }*/
-            //raises and lowers four bar linkage
-            if(gamepad2.left_trigger> .01)
-            {
-                raiseFourBar(-gamepad2.left_trigger*3/4);
-               telemetry.addData("current position",fourBar.getCurrentPosition());
-               telemetry.update();
+                moveArm(100, armSpeed);
             }
-            if(gamepad2.right_trigger> 0.1) {
-                raiseFourBar(gamepad2.right_trigger*3/4);
-                telemetry.addData("current position",fourBar.getCurrentPosition());
-                telemetry.update();
-            }
-            else
-            {
-                brakeFourBar();
-            }
+
 
         }
     }
-    public void brakeFourBar()
-    {
-        fourBar.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        fourBar2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    }
+
     public void platformMoverPosition(double position)
     {
         leftServo.setPosition(position);
@@ -148,92 +130,35 @@ public class TeleopMode extends LinearOpMode
         fourBar.setPower(liftSpeed);
         fourBar2.setPower(liftSpeed);
     }
-  /*  public void positionA()
-    {
-        if(positionB = true)
-        {
-            positionCode(-PositionB);
-            positionB = false;
-        }
-        if(positionC = true);
-        {
-            positionCode(-PositionC);
-            positionC = false;
-        }
-        if(positionD = true)
-        {
-            positionCode(-PositionD);
-            positionD = false;
-        }
-        positionA = true;
-    }
-    public void positionB()
-    {
-        if(positionA = true)
-        {
-            positionCode((PositionB - PositionA));
-            positionA = false;
-        }
-        if(positionC = true)
-        {
-            positionCode((PositionB - PositionC));
-            positionC = false;
-        }
-        if(positionD = true)
-        {
-            positionCode((PositionB - PositionD));
-            positionD = false;
-        }
-        positionB = true;
-    }
-    public void positionC()
-    {
-        if(positionA = true)
-        {
-            positionCode((PositionC - PositionA));
-            positionA = false;
-        }
-        if(positionB = true)
-        {
-            positionCode((PositionC -PositionB));
-            positionB = false;
-        }
-        if(positionD = true)
-        {
-            positionCode((PositionC-PositionD));
-            positionD = false;
-        }
-        positionC = true;
-    }
-    public void positionD()
-    {
-        if(positionA = true)
-        {
-            positionCode((PositionD - PositionA));
-            positionA = false;
-        }
-        if(positionB = true)
-        {
-            positionCode((PositionD - PositionB));
-            positionB = false;
-        }
-        if(positionC = true)
-        {
-            positionCode((PositionD - PositionC));
-            positionC = false;
-        }
-        positionD = true;
-    }
 
-    public void positionCode( int TargetPosition)
+
+    public void armEncoderReset(){
+        fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fourBar2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+    public void moveArm(int position, double power)
     {
-        fourBar.setTargetPosition(TargetPosition);
-        fourBar2.setTargetPosition(TargetPosition);
-        while(fourBar.isBusy()|| fourBar2.isBusy() && opModeIsActive()) {
-            //Loop body can be empty
+        armEncoderReset();
+
+        fourBar.setTargetPosition(position);
+        fourBar2.setTargetPosition(position);
+
+        fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        fourBar2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        fourBar.setPower(power);
+        fourBar2.setPower(power);
+
+        while(fourBar.isBusy() || fourBar2.isBusy()){
+            telemetry.addData("Moving to", position);
+            telemetry.addData("From", fourBar.getCurrentPosition());
+            telemetry.update();
         }
+        telemetry.addData("Arm Status", "done," + position);
+        telemetry.update();
         fourBar.setPower(0);
-    }*/
+        fourBar2.setPower(0);
+    }
 
 
 }
