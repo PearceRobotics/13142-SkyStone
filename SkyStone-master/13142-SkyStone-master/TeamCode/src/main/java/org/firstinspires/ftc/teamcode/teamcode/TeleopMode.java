@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @TeleOp(name = "Teleop", group = "Teleop" )
 public class TeleopMode extends LinearOpMode
@@ -14,8 +16,8 @@ public class TeleopMode extends LinearOpMode
     //Declare motors and servos
     private DcMotor motorLeft;
     private DcMotor motorRight;
-    private DcMotor fourBar;
-    private DcMotor fourBar2;
+    private DcMotorEx fourBar;
+    private DcMotorEx fourBar2;
     private Servo leftServo;
     private Servo rightServo;
     private Servo intakeLeft;
@@ -40,8 +42,8 @@ public class TeleopMode extends LinearOpMode
         Context myApp = hardwareMap.appContext;
         motorLeft = hardwareMap.dcMotor.get("motorLeft");
         motorRight = hardwareMap.dcMotor.get("motorRight");
-        fourBar = hardwareMap.dcMotor.get("lifter");
-        fourBar2 = hardwareMap.dcMotor.get("lifter2");
+        fourBar = (DcMotorEx)hardwareMap.get(DcMotor.class, "lifter");
+        fourBar2 = (DcMotorEx)hardwareMap.get(DcMotor.class, "lifter2");
         intakeLeft = hardwareMap.get(Servo.class, "intakeLeft");
         intakeRight = hardwareMap.get(Servo.class, "intakeRight");
         leftServo = hardwareMap.get(Servo.class, "leftServo");
@@ -65,9 +67,16 @@ public class TeleopMode extends LinearOpMode
         ////1120 ticks per rotation
 
         waitForStart();
+        PIDCoefficients pidOrig = fourBar.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        PIDCoefficients pidOrig2 = fourBar2.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
         while(opModeIsActive())
         {
+            telemetry.addData("P,I,D (orig)", "%.04f, %.04f, %.0f",
+                    pidOrig.p, pidOrig.i, pidOrig.d);
+            telemetry.addData("P,I,D (orig2)", "%.04f, %.04f, %.0f",
+                    pidOrig2.p, pidOrig2.i, pidOrig2.d);
             //tank drive
             motorLeft.setPower(-gamepad1.left_stick_y);
             motorRight.setPower(-gamepad1.right_stick_y);
