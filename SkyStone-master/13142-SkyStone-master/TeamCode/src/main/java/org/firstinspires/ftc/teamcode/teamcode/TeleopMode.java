@@ -77,6 +77,7 @@ public class TeleopMode extends LinearOpMode
                     pidOrig.p, pidOrig.i, pidOrig.d);
             telemetry.addData("P,I,D (orig2)", "%.04f, %.04f, %.0f",
                     pidOrig2.p, pidOrig2.i, pidOrig2.d);
+            telemetry.update();
             //tank drive
             motorLeft.setPower(-gamepad1.left_stick_y);
             motorRight.setPower(-gamepad1.right_stick_y);
