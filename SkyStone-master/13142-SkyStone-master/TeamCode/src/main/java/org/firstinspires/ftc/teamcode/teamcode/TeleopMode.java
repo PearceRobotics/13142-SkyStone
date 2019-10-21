@@ -30,11 +30,11 @@ public class TeleopMode extends LinearOpMode
     static final double IntakeUp = 0.0;
     static final double IntakeDown = 1.0;
     static final double armSpeed = 1;
+    static final int ToleranceAd = 20;
     static boolean positionA;
     static boolean positionB;
     static boolean positionC;
     static boolean positionD;
-
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -79,16 +79,16 @@ public class TeleopMode extends LinearOpMode
                     pidOrig2.p, pidOrig2.i, pidOrig2.d);
             telemetry.update();
             //tank drive
-            motorLeft.setPower(-gamepad1.left_stick_y);
-            motorRight.setPower(-gamepad1.right_stick_y);
+            motorLeft.setPower(-gamepad2.left_stick_y);
+            motorRight.setPower(-gamepad2.right_stick_y);
 
             //platform moving servos up
-            if(gamepad1.left_bumper)
+            if(gamepad2.dpad_up)
             {
                 platformMoverPosition(maxPosition);
             }
             //platform moving servos down
-            else if(gamepad1.right_bumper)
+            else if(gamepad2.dpad_down)
             {
                 platformMoverPosition(minPosition);
             }
@@ -106,23 +106,24 @@ public class TeleopMode extends LinearOpMode
 
             if(gamepad2.a)
             {
-                moveArm(-fourBar.getCurrentPosition() -5, armSpeed);
+                moveArm(185 + ToleranceAd, armSpeed, 20);
             }
             if(gamepad2.b)
             {
-                moveArm(25, armSpeed);
+                moveArm(70 + ToleranceAd, armSpeed, 20);
             }
             if(gamepad2.x)
             {
-                moveArm(50, armSpeed);
+                moveArm(125 +ToleranceAd, armSpeed, 25);
             }
             if(gamepad2.y)
             {
-                moveArm(100, armSpeed);
+                moveArm(155 + ToleranceAd, armSpeed, 15);
             }
-
-
-        }
+              if(gamepad2.right_trigger> 0.1){
+             raiseFourBar(gamepad2.right_trigger);
+              }
+              if(gamepad2.left_trigger> 0.1){  raiseFourBar(-gamepad2.right_trigger); }}
     }
 
     public void platformMoverPosition(double position)
@@ -136,7 +137,7 @@ public class TeleopMode extends LinearOpMode
         intakeRight.setPosition(position);
     }
     public void raiseFourBar(double liftSpeed)
-    {
+{              fourBar.setMode( DcMotor.RunMode.RUN_WITHOUT_ENCODER); fourBar2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         fourBar.setPower(liftSpeed);
         fourBar2.setPower(liftSpeed);
     }
@@ -146,9 +147,15 @@ public class TeleopMode extends LinearOpMode
         fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fourBar2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
-    public void moveArm(int position, double power)
-    {
+    public void moveArm(int position, double power, int tolerance )
+    { if(!(gamepad2.start)){
         armEncoderReset();
+
+        fourBar.setPower(power);
+        fourBar2.setPower(power);
+
+        fourBar.setTargetPositionTolerance(tolerance + ToleranceAd);
+        fourBar2.setTargetPositionTolerance(tolerance + ToleranceAd);
 
         fourBar.setTargetPosition(position);
         fourBar2.setTargetPosition(position);
@@ -156,18 +163,17 @@ public class TeleopMode extends LinearOpMode
         fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         fourBar2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        fourBar.setPower(power);
-        fourBar2.setPower(power);
-
-        while(fourBar.isBusy() || fourBar2.isBusy()){
+        while(fourBar.isBusy() || fourBar2.isBusy())
+        {
             telemetry.addData("Moving to", position);
             telemetry.addData("From", fourBar.getCurrentPosition());
+            telemetry.addData("Power", fourBar.getPower());
             telemetry.update();
         }
         telemetry.addData("Arm Status", "done," + position);
         telemetry.update();
         fourBar.setPower(0);
-        fourBar2.setPower(0);
+        fourBar2.setPower(0);}
     }
 
 

@@ -37,7 +37,7 @@ public class RedAutonDriveToLine extends LinearOpMode {
 
           if(!(colorsensor.red()>70)&& stop == false )
            {
-              driveForward(1.0);
+              driveForward(-1.0);
               telemetry.addData("Red", colorsensor.red());
               telemetry.update();
           }
