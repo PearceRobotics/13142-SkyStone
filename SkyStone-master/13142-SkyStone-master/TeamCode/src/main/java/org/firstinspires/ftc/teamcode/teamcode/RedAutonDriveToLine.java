@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name ="Blue Navigate", group = "Blue Auton")
+@Autonomous(name ="Red Navigate", group = "Red Auton")
 public class RedAutonDriveToLine extends LinearOpMode {
     //Declare variables/ objects
     private DcMotor motorLeft;

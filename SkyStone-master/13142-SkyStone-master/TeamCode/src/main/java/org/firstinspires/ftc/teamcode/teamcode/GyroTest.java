@@ -6,6 +6,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -19,23 +23,39 @@ public class GyroTest extends LinearOpMode {
     private DcMotorEx motorLeft;
     private DcMotorEx  motorRight;
     private ColorSensor colorsensor;
+    private Servo leftServo;
+    private Servo rightServo;
     BNO055IMU imu;
     Orientation lastAngles = new Orientation();
     PIDcontroller pidRotate;
     PIDcontroller pidDrive;
 
     //Declare Variables
-    double speed = 1;
     double globalAngle;
-    double power = .30;
+    double power = .75;
     double correction;
     double rotation;
+
+    static final double maxPosition = 0.0;
+    static final double minPosition = 1.0;
+
+
+    double NEW_P= 12.00;
+    double NEW_I =0.03;
+    double NEW_D = 0;
+    double New_F = 0;
+
+   boolean stop = false;
+
+
 
     @Override
             public void runOpMode()
     {
         motorLeft = (DcMotorEx)hardwareMap.dcMotor.get("motorLeft");
         motorRight =(DcMotorEx)hardwareMap.dcMotor.get("motorRight");
+        leftServo = hardwareMap.get(Servo.class, "leftServo");
+        rightServo = hardwareMap.get(Servo.class, "rightServo");
         colorsensor = hardwareMap.colorSensor.get("colorsensor");
 
         motorLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -53,6 +73,8 @@ public class GyroTest extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         imu.initialize(parameters);
+
+        colorsensor.enableLed(true);
 
         // Set PID proportional value to start reducing power at about 50 degrees of rotation.
         // P by itself may stall before turn completed so we add a bit of I (integral) which
@@ -73,12 +95,21 @@ public class GyroTest extends LinearOpMode {
             idle();
         }
 
+        PIDCoefficients pidOrig = motorLeft.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
         telemetry.addData("Mode", "waiting for start");
         telemetry.addData("imu calib status", imu.getCalibrationStatus().toString());
+        telemetry.addData("P,I,D (orig)", "%.04f, %.04f, %.0f",
+                pidOrig.p, pidOrig.i, pidOrig.d);
         telemetry.update();
+
+       PIDFCoefficients pidNew = new PIDFCoefficients(NEW_P, NEW_I, NEW_D, New_F);
+       motorLeft.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
+       motorRight.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
+
 
 
         waitForStart();
+
 
         pidDrive.setSetpoint(0);
         pidDrive.setOutputRange(0, power);
@@ -89,18 +120,8 @@ public class GyroTest extends LinearOpMode {
         //Start autonomous code
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        motorLeft.setTargetPosition(300);
-        motorRight.setTargetPosition(300);
-
-        motorLeft.setPower(speed - correction);
-        motorRight.setPower(speed + correction);
-
-        motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
+        driveForward(2000, 50, 1);
         rotate(90,power);
 
         telemetry.addData("Mode", "running");
@@ -109,6 +130,44 @@ public class GyroTest extends LinearOpMode {
         sleep(1000);
 
 
+    }
+    private void driveForward(int distance, int tolerance, double speed)
+    {
+        motorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        telemetry.addData("This kinda works", "kinda");
+        telemetry.update();
+
+       // motorLeft.setTargetPositionTolerance(tolerance);
+        //motorRight.setTargetPositionTolerance(tolerance);
+        motorLeft.setTargetPosition(distance);
+        motorRight.setTargetPosition(distance);
+
+        motorLeft.setPower(speed);
+        motorRight.setPower(speed);
+
+        while(motorLeft.getCurrentPosition() < motorLeft.getTargetPosition() - 20)
+        {
+            telemetry.addData( "PID IS WORKIN'", "0");
+            telemetry.addData("Current Position:", motorLeft.getCurrentPosition());
+            telemetry.update();
+        }
+        telemetry.addData("Current Position:", motorLeft.getCurrentPosition());
+        telemetry.update();
+
+         motorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        telemetry.addData("status: ","setting power to zero");
+
+        motorLeft.setPower(0);
+        motorRight.setPower(0);
+
+        telemetry.addData("status: ","done going forward");
     }
     private void resetAngle()
     {
@@ -208,15 +267,26 @@ public class GyroTest extends LinearOpMode {
         // reset angle tracking on new heading.
         resetAngle();
     }
-    private void updatePhone()
+
+    private void colorSensor()
     {
-        telemetry.addData("1 imu heading", lastAngles.firstAngle);
-        telemetry.addData("2 global heading", globalAngle);
-        telemetry.addData("3 correction", correction);
-        telemetry.addData("4 turn rotation", rotation);
-        telemetry.update();
+        if(!(colorsensor.blue()>70)&& stop == false )
+        {
+            motorLeft.setPower(-1.0);
+            motorRight.setPower(1.0);
+            telemetry.addData("Blue", colorsensor.blue());
+            telemetry.update();
+        }
+        else {
+            motorLeft.setPower(0.0);
+            motorRight.setPower(0.0);
+            stop = true;
+        }
 
     }
-
-
+    private void movePlatform(double position)
+    {
+        leftServo.setPosition(position);
+        rightServo.setPosition(position);
+    }
 }
