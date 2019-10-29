@@ -121,8 +121,10 @@ public class GyroTest extends LinearOpMode {
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        driveForward(2000, 50, 1);
-        rotate(90,power);
+        movePlatform(minPosition);
+        driveForward(2500, 0, 1);
+        movePlatform(maxPosition);
+        //rotate(90,power);
 
         telemetry.addData("Mode", "running");
         telemetry.update();
@@ -150,7 +152,7 @@ public class GyroTest extends LinearOpMode {
         motorLeft.setPower(speed);
         motorRight.setPower(speed);
 
-        while(motorLeft.getCurrentPosition() < motorLeft.getTargetPosition() - 20)
+        while(motorLeft.getCurrentPosition() < motorLeft.getTargetPosition() -  20)
         {
             telemetry.addData( "PID IS WORKIN'", "0");
             telemetry.addData("Current Position:", motorLeft.getCurrentPosition());
