@@ -121,15 +121,25 @@ public class GyroTest extends LinearOpMode {
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        movePlatform(minPosition);
-        driveForward(2500, 0, 1);
+
         movePlatform(maxPosition);
-        //rotate(90,power);
+        sleep(1000);
+        driveForward(2500, 45, 1);
+        sleep(1000);
+        movePlatform(minPosition);
+        sleep(1000);
+        driveForward(-2400, 100, 1);
+        sleep(1000);
+        rotate(22, power);
+        sleep(1000);
+        movePlatform(maxPosition);
+        sleep(1000);
+        rotate(68,power);
+       // rotate(90,power);
 
         telemetry.addData("Mode", "running");
         telemetry.update();
 
-        sleep(1000);
 
 
     }
@@ -144,15 +154,13 @@ public class GyroTest extends LinearOpMode {
         telemetry.addData("This kinda works", "kinda");
         telemetry.update();
 
-       // motorLeft.setTargetPositionTolerance(tolerance);
-        //motorRight.setTargetPositionTolerance(tolerance);
         motorLeft.setTargetPosition(distance);
         motorRight.setTargetPosition(distance);
 
         motorLeft.setPower(speed);
         motorRight.setPower(speed);
 
-        while(motorLeft.getCurrentPosition() < motorLeft.getTargetPosition() -  20)
+        while(Math.abs(motorLeft.getCurrentPosition()) < Math.abs( motorLeft.getTargetPosition()) -  tolerance)
         {
             telemetry.addData( "PID IS WORKIN'", "0");
             telemetry.addData("Current Position:", motorLeft.getCurrentPosition());
@@ -290,5 +298,6 @@ public class GyroTest extends LinearOpMode {
     {
         leftServo.setPosition(position);
         rightServo.setPosition(position);
+        telemetry.addData("platform moved", "complete");
     }
 }
