@@ -27,12 +27,12 @@ public class GyroTest extends LinearOpMode {
     private Servo rightServo;
     BNO055IMU imu;
     Orientation lastAngles = new Orientation();
-    PIDcontroller pidRotate;
-    PIDcontroller pidDrive;
+   PIDcontroller pidRotate;
+
 
     //Declare Variables
     double globalAngle;
-    double power = .75;
+    double power = 1;
     double correction;
     double rotation;
 
@@ -83,7 +83,7 @@ public class GyroTest extends LinearOpMode {
 
         // Set PID proportional value to produce non-zero correction value when robot veers off
         // straight line. P value controls how sensitive the correction is.
-        pidDrive = new PIDcontroller(.05, 0, 0);
+       // pidDrive = new PIDcontroller(.05, 0, 0);
 
         telemetry.addData("Mode", "calibrating...");
         telemetry.update();
@@ -95,27 +95,21 @@ public class GyroTest extends LinearOpMode {
             idle();
         }
 
-        PIDCoefficients pidOrig = motorLeft.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-        telemetry.addData("Mode", "waiting for start");
-        telemetry.addData("imu calib status", imu.getCalibrationStatus().toString());
-        telemetry.addData("P,I,D (orig)", "%.04f, %.04f, %.0f",
-                pidOrig.p, pidOrig.i, pidOrig.d);
-        telemetry.update();
-
        PIDFCoefficients pidNew = new PIDFCoefficients(NEW_P, NEW_I, NEW_D, New_F);
        motorLeft.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
        motorRight.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
+        telemetry.addData("Mode", "waiting for start");
+        telemetry.addData("imu calib status", imu.getCalibrationStatus().toString());
+        telemetry.addData("P,I,D (orig)", "%.04f, %.04f, %.0f",
+                pidNew.p, pidNew.i, pidNew.d);
+        telemetry.update();
 
 
 
         waitForStart();
 
 
-        pidDrive.setSetpoint(0);
-        pidDrive.setOutputRange(0, power);
-        pidDrive.setInputRange(-90, 90);
-        pidDrive.enable();
-        correction = pidDrive.performPID(getAngle());
+
 
         //Start autonomous code
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -124,18 +118,20 @@ public class GyroTest extends LinearOpMode {
 
         movePlatform(maxPosition);
         sleep(1000);
-        driveForward(2500, 45, 1);
+       driveForward(2500, 45, 1);
         sleep(1000);
         movePlatform(minPosition);
+       sleep(1000);
+       driveForward(-2400, 100, 1);
+       sleep(1000);
+        rotate(25, power);
+       sleep(1000);
+        driveForward(-200, 40, 1);
         sleep(1000);
-        driveForward(-2400, 100, 1);
+       movePlatform(maxPosition);
         sleep(1000);
-        rotate(22, power);
-        sleep(1000);
-        movePlatform(maxPosition);
-        sleep(1000);
-        rotate(68,power);
-       // rotate(90,power);
+        rotate(70,power);
+
 
         telemetry.addData("Mode", "running");
         telemetry.update();
@@ -199,7 +195,7 @@ public class GyroTest extends LinearOpMode {
 
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
+        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;// yo neccisitas ayuda, por favor.
 
         if (deltaAngle < -180)
             deltaAngle += 360;
@@ -280,6 +276,7 @@ public class GyroTest extends LinearOpMode {
 
     private void colorSensor()
     {
+        while(stop == false)
         if(!(colorsensor.blue()>70)&& stop == false )
         {
             motorLeft.setPower(-1.0);
