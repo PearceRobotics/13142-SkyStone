@@ -34,7 +34,7 @@ public class BlueAutonDriveToLine extends LinearOpMode {
        while(opModeIsActive())
        {
 
-          if(!(colorsensor.blue()>70)&& stop == false )
+          if(!(colorsensor.blue()>32)&& stop == false )
            {
               driveForward(-1.0);
               telemetry.addData("Blue", colorsensor.blue());
@@ -44,6 +44,10 @@ public class BlueAutonDriveToLine extends LinearOpMode {
               driveForward(0.0);
               stop = true;
           }
+           telemetry.addData("Blue", colorsensor.blue());
+           telemetry.update();
+
+
        }
 
     }
