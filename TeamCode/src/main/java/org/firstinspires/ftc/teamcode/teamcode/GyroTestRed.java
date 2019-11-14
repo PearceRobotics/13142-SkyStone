@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -17,13 +16,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 
-@Autonomous(name = "GyroTest", group = "Auton")
-public class GyroTest extends LinearOpMode {
+@Autonomous(name = "GyroTestRed", group = "Auton")
+public class GyroTestRed extends LinearOpMode {
 
     //Declare Objects
     private DcMotorEx motorLeft;
     private DcMotorEx  motorRight;
-    private DcMotorEx motorMiddle;
     private ColorSensor colorsensor;
     private Servo leftServo;
     private Servo rightServo;
@@ -57,7 +55,6 @@ public class GyroTest extends LinearOpMode {
             public void runOpMode() throws InterruptedException {
         motorLeft = (DcMotorEx)hardwareMap.dcMotor.get("motorLeft");
         motorRight =(DcMotorEx)hardwareMap.dcMotor.get("motorRight");
-        motorMiddle = (DcMotorEx)hardwareMap.dcMotor.get("motorMiddle");
         leftServo = hardwareMap.get(Servo.class, "leftServo");
         rightServo = hardwareMap.get(Servo.class, "rightServo");
         colorsensor = hardwareMap.colorSensor.get("colorsensor");
@@ -65,7 +62,6 @@ public class GyroTest extends LinearOpMode {
 
 
         motorLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorMiddle.setDirection(DcMotor.Direction.REVERSE);
 
         motorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -154,7 +150,7 @@ public class GyroTest extends LinearOpMode {
         motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rotate(20, power);
+        rotate(-20, power);
         runtime.reset();
         while(runtime.seconds()<1) {}
         while(motorLeft.getCurrentPosition() > -200 &&  motorRight.getCurrentPosition()> -200 )
@@ -317,7 +313,7 @@ public class GyroTest extends LinearOpMode {
         resetAngle();
     }
 
-    private void colorSensor()
+  /*  private void colorSensor()
     {
         while(stop == false)
         if(!(colorsensor.blue()>70)&& stop == false )
@@ -333,7 +329,7 @@ public class GyroTest extends LinearOpMode {
             stop = true;
         }
 
-    }
+    }*/
     private void movePlatform(double position)
     {
         leftServo.setPosition(position);

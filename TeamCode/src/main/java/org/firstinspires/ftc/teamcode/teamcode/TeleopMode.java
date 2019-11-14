@@ -17,8 +17,9 @@ public class TeleopMode extends LinearOpMode {
     //Declare motors and servos
    public static DcMotor motorLeft;
    public static DcMotor motorRight;
+   public static DcMotor motorMiddle;
    public static DcMotorEx fourBar;
-   public static DcMotorEx fourBar2;
+   //public static DcMotorEx fourBar2;
    public static Servo leftServo;
    public static Servo rightServo;
    public static  Servo intakeLeft;
@@ -36,34 +37,34 @@ public class TeleopMode extends LinearOpMode {
     static final double IntakeDown = 1.0;
     static final double armSpeed = 1;
     static final int ToleranceAd = 20;
+    double leftPower;
+    double rightPower;
     static boolean positionA;
     static boolean positionB;
     static boolean positionC;
     static boolean positionD;
-
-    static boolean tankDrive = true;
-    static boolean arcadeDrive = false;
-
 
     @Override
     public void runOpMode() throws InterruptedException {
         Context myApp = hardwareMap.appContext;
         motorLeft = hardwareMap.dcMotor.get("motorLeft");
         motorRight = hardwareMap.dcMotor.get("motorRight");
+        motorMiddle = hardwareMap.dcMotor.get("motorMiddle");
         fourBar = (DcMotorEx) hardwareMap.get(DcMotor.class, "lifter");
-        fourBar2 = (DcMotorEx) hardwareMap.get(DcMotor.class, "lifter2");
+        //fourBar2 = (DcMotorEx) hardwareMap.get(DcMotor.class, "lifter2");
         intakeLeft = hardwareMap.get(Servo.class, "intakeLeft");
         intakeRight = hardwareMap.get(Servo.class, "intakeRight");
-        leftServo = hardwareMap.get(Servo.class, "leftServo");
         rightServo = hardwareMap.get(Servo.class, "rightServo");
-        limitSwitch =hardwareMap.digitalChannel.get("limitSwitch");
+        limitSwitch = hardwareMap.digitalChannel.get("limitSwitch");
 
         motorLeft.setDirection(DcMotor.Direction.REVERSE);
-        fourBar2.setDirection(DcMotor.Direction.REVERSE);
+        // fourBar2.setDirection(DcMotor.Direction.REVERSE);
         intakeLeft.setDirection(Servo.Direction.REVERSE);
+        motorMiddle.setDirection(DcMotor.Direction.REVERSE);
 
         fourBar.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        fourBar2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // fourBar2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftServo = hardwareMap.get(Servo.class, "leftServo");
 
         positionA = true;
         positionB = false;
@@ -71,29 +72,23 @@ public class TeleopMode extends LinearOpMode {
         positionD = false;
 
         fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fourBar2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        // fourBar2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         waitForStart();
         PIDCoefficients pidOrig = fourBar.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-        PIDCoefficients pidOrig2 = fourBar2.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        // PIDCoefficients pidOrig2 = fourBar2.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
         while (opModeIsActive()) {
 
-            if(tankDrive) {
-                motorLeft.setPower(-gamepad2.left_stick_y);
-                motorRight.setPower(-gamepad2.right_stick_y);
-            }
-            if(arcadeDrive) {
-                double leftPower;
-                double rightPower;
-                double drive = -gamepad2.left_stick_y;
-                double turn = gamepad2.right_stick_x;
-                leftPower = Range.clip(drive + turn, -1.0, 1.0);
-                rightPower = Range.clip(drive - turn, -1.0, 1.0);
-                motorLeft.setPower(leftPower);
-                motorRight.setPower(rightPower);
-            }
+            double drive = -gamepad2.left_stick_y;
+            double turn = gamepad2.right_stick_x;
+            leftPower = Range.clip(drive + turn, -1.0, 1.0);
+            rightPower = Range.clip(drive - turn, -1.0, 1.0);
+            motorLeft.setPower(leftPower);
+            motorRight.setPower(rightPower);
+            motorMiddle.setPower(gamepad2.left_stick_x);
+
 
             //platform moving servos up
             if (gamepad2.dpad_up) {
@@ -128,35 +123,25 @@ public class TeleopMode extends LinearOpMode {
             }
 
             if (gamepad2.right_trigger > 0.1) {
-                raiseFourBar(gamepad2.right_trigger/2);
+                telemetry.addData("lifter on", " ");
+                telemetry.update();
+                raiseFourBar(gamepad2.right_trigger / 2);
             }
             if (gamepad2.left_trigger > 0.1) {
-                raiseFourBar(-gamepad2.left_trigger/4);
+                telemetry.addData("lifter on", " ");
+                telemetry.update();
+                raiseFourBar(-gamepad2.left_trigger / 4);
             }
 
 
-
-
-            if (gamepad2.back)
-            {
+            if (gamepad2.back) {
                 useSwitch();
             }
 
-            if(gamepad2.start)
-            {
-                if(arcadeDrive)
-                {
-                    arcadeDrive = false;
-                    tankDrive = true;
-                }
-                else if(tankDrive)
-                {
-                    tankDrive = false;
-                    arcadeDrive = true;
-                }
-            }
+
         }
     }
+
 
     public void platformMoverPosition(double position) {
         leftServo.setPosition(position);
@@ -170,15 +155,15 @@ public class TeleopMode extends LinearOpMode {
 
     public void raiseFourBar(double liftSpeed) {
         fourBar.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        fourBar2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            fourBar.setPower(liftSpeed);
-            fourBar2.setPower(liftSpeed);
+        // fourBar2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fourBar.setPower(liftSpeed);
+        //  fourBar2.setPower(liftSpeed);
     }
 
 
-    public void armEncoderReset() {
+   public void armEncoderReset() {
         fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fourBar2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+       // fourBar2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public void moveArm(int position, double power, int tolerance) {
@@ -187,18 +172,18 @@ public class TeleopMode extends LinearOpMode {
             armEncoderReset();
 
             fourBar.setPower(power);
-            fourBar2.setPower(power);
+          //  fourBar2.setPower(power);
 
             fourBar.setTargetPositionTolerance(tolerance + ToleranceAd);
-            fourBar2.setTargetPositionTolerance(tolerance + ToleranceAd);
+          //  fourBar2.setTargetPositionTolerance(tolerance + ToleranceAd);
 
             fourBar.setTargetPosition(position);
-            fourBar2.setTargetPosition(position);
+          //  fourBar2.setTargetPosition(position);
 
             fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            fourBar2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+          //  fourBar2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            while (fourBar.isBusy() || fourBar2.isBusy()) {
+            while (fourBar.isBusy()) {
                 telemetry.addData("Moving to", position);
                 telemetry.addData("From", fourBar.getCurrentPosition());
                 telemetry.addData("Power", fourBar.getPower());
@@ -207,21 +192,21 @@ public class TeleopMode extends LinearOpMode {
             telemetry.addData("Arm Status", "done," + position);
             telemetry.update();
             fourBar.setPower(0);
-            fourBar2.setPower(0);
+           // fourBar2.setPower(0);
         }
 
 
     }
-    public void useSwitch()
+   public void useSwitch()
     {
         fourBar.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        fourBar2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+      //  fourBar2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         while (limitSwitch.getState() == true)
         {
             fourBar.setPower(-.5);
-            fourBar2.setPower(-.5);
+         //   fourBar2.setPower(-.5);
         }
         fourBar.setPower(0);
-        fourBar2.setPower(0);
+        //fourBar2.setPower(0);
     }
 }

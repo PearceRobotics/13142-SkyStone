@@ -15,17 +15,26 @@ public class Catapult extends LinearOpMode {
     @Override
     public void runOpMode(){
         Catapult = hardwareMap.get(Servo.class, "Servo");
+        telemetry.addData("initialized", 1);
+        telemetry.update();
+        Catapult.setDirection(Servo.Direction.REVERSE);
 
         waitForStart();
         while(opModeIsActive())
         {
+            telemetry.addData("kind of working", 1);
+            telemetry.update();
             if(gamepad1.a)
             {
-              Catapult.setPosition(up);
+              Catapult.setPosition(1.0);
+                telemetry.addData("up", 1);
+                telemetry.update();
             }
             if(gamepad1.b)
             {
-                Catapult.setPosition(down);
+                Catapult.setPosition(0);
+                telemetry.addData("down", 1);
+                telemetry.update();
             }
 
         }
