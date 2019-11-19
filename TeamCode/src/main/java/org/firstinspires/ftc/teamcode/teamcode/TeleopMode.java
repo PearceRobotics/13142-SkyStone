@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teamcode;
 
 import android.content.Context;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,12 +12,17 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
 @TeleOp(name = "Teleop", group = "Teleop" )
 public class TeleopMode extends LinearOpMode {
 
     //Declare motors and servos
-   public static DcMotor motorLeft;
-   public static DcMotor motorRight;
+   public static DcMotorEx motorLeft;
+   public static DcMotorEx motorRight;
    public static DcMotor motorMiddle;
    public static DcMotorEx fourBar;
    //public static DcMotorEx fourBar2;
@@ -25,9 +31,8 @@ public class TeleopMode extends LinearOpMode {
    public static  Servo intakeLeft;
    public static Servo intakeRight;
    public static DigitalChannel limitSwitch;
-
-
-
+    BNO055IMU imu;
+    Orientation lastAngles = new Orientation();
 
 
     //Variables
@@ -43,12 +48,13 @@ public class TeleopMode extends LinearOpMode {
     static boolean positionB;
     static boolean positionC;
     static boolean positionD;
+    double lastAngle;
 
     @Override
     public void runOpMode() throws InterruptedException {
         Context myApp = hardwareMap.appContext;
-        motorLeft = hardwareMap.dcMotor.get("motorLeft");
-        motorRight = hardwareMap.dcMotor.get("motorRight");
+        motorLeft = (DcMotorEx)hardwareMap.dcMotor.get("motorLeft");
+        motorRight = (DcMotorEx)hardwareMap.dcMotor.get("motorRight");
         motorMiddle = hardwareMap.dcMotor.get("motorMiddle");
         fourBar = (DcMotorEx) hardwareMap.get(DcMotor.class, "lifter");
         //fourBar2 = (DcMotorEx) hardwareMap.get(DcMotor.class, "lifter2");
@@ -56,6 +62,17 @@ public class TeleopMode extends LinearOpMode {
         intakeRight = hardwareMap.get(Servo.class, "intakeRight");
         rightServo = hardwareMap.get(Servo.class, "rightServo");
         limitSwitch = hardwareMap.digitalChannel.get("limitSwitch");
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = false;
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
 
         motorLeft.setDirection(DcMotor.Direction.REVERSE);
         // fourBar2.setDirection(DcMotor.Direction.REVERSE);
@@ -89,6 +106,12 @@ public class TeleopMode extends LinearOpMode {
             motorRight.setPower(rightPower);
             motorMiddle.setPower(gamepad2.left_stick_x);
 
+            if(gamepad2.left_stick_x > 0.1||gamepad2.left_stick_y > 0.1|| gamepad2.right_stick_y > 0.1|| gamepad2.left_stick_x <- 0.1||gamepad2.left_stick_x <- 0.1||gamepad2.left_stick_y <- 0.1|| gamepad2.right_stick_y < - 0.1|| gamepad2.left_stick_x <- 0.1)
+            {
+                Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                 lastAngle = angles.firstAngle;
+            }
+
 
             //platform moving servos up
             if (gamepad2.dpad_up) {
@@ -97,6 +120,20 @@ public class TeleopMode extends LinearOpMode {
             //platform moving servos down
             else if (gamepad2.dpad_down) {
                 platformMoverPosition(minPosition);
+            }
+            if(gamepad2.dpad_right){
+                motorMiddle.setPower(1);
+                Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                double angle = angles.firstAngle;
+                motorLeft.setPower(.05 * lastAngle- angle);
+                motorRight.setPower(- .05 * lastAngle -angle);
+            }
+            if(gamepad2.dpad_left){
+                motorMiddle.setPower(-1);
+                Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                double angle = angles.firstAngle;
+                motorLeft.setPower(.05 * - angle);
+                motorRight.setPower(- .05 * angle);
             }
 
             //Moves intake up
